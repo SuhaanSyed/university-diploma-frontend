@@ -1,4 +1,4 @@
-import styles from "../styles/ConnectWallet.module.css";
+import styles from "../assets/styles/ConnectWallet.module.css";
 
 const ConnectWalletButton = ({
     onPressLogout,
