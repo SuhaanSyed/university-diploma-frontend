@@ -1,62 +1,57 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../services/supabaseClient';
 import Web3 from 'web3';
 
-function Login() {
-    const navigate = useNavigate();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+function Login({ setCurrentPage, setRole }) {
+    const [walletAddress, setWalletAddress] = useState('');
+    const [role, setRoleState] = useState('');
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        const { user, error } = await supabase.auth.signIn({ email, password });
-        if (user) {
-            navigate.push('/dashboard');
+    const detectCurrentProvider = () => {
+        let provider;
+        if (window.ethereum) {
+            provider = window.ethereum;
+        } else if (window.web3) {
+            provider = window.web3.currentProvider;
         } else {
-            alert(error.message);
+            console.log('No Ethereum browser detected. You should consider trying MetaMask!');
         }
+        return provider;
     };
 
-    const handleMetaMaskLogin = async () => {
-        if (window.ethereum) {
-            try {
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
-                const web3 = new Web3(window.ethereum);
+    const onConnect = async () => {
+        try {
+            const currentProvider = detectCurrentProvider();
+            if (currentProvider) {
+                await currentProvider.request({ method: 'eth_requestAccounts' });
+                const web3 = new Web3(currentProvider);
                 const accounts = await web3.eth.getAccounts();
-                const account = accounts[0];
-                // Handle authentication using MetaMask address
-                alert(`Logged in with MetaMask address: ${account}`);
-                navigate.push('/dashboard');
-            } catch (error) {
-                console.error(error);
+                setWalletAddress(accounts[0]);
+
+                // Dummy logic to determine role
+                // In a real scenario, you would fetch this from your backend
+                if (accounts[0] === '0xValidStudentAddress') {
+                    setRole('student');
+                } else if (accounts[0] === '0xValidCollegeAddress') {
+                    setRole('college');
+                } else if (accounts[0] === '0xValidCompanyAddress') {
+                    setRole('company');
+                } else {
+                    alert('No account found. Please register.');
+                    setCurrentPage('register');
+                    return;
+                }
+
+                setCurrentPage(`${role}Dashboard`);
             }
-        } else {
-            alert('MetaMask not detected. Please install MetaMask.');
+        } catch (err) {
+            console.log(err);
         }
     };
 
     return (
-        <div className="login-container">
-            <h2>Login</h2>
-            <form onSubmit={handleLogin}>
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                <button type="submit">Login</button>
-            </form>
-            <button onClick={handleMetaMaskLogin}>Login with MetaMask</button>
+        <div className='Login'>
+            <h1>Login</h1>
+            <button onClick={onConnect}>Login with MetaMask</button>
+            {walletAddress && <p>Connected Wallet: {walletAddress}</p>}
         </div>
     );
 }
