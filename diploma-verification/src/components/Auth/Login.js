@@ -1,57 +1,72 @@
-import React, { useState } from 'react';
-import Web3 from 'web3';
+import React, { useState } from "react";
+import Web3 from "web3";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useAmoy } from "./AmoyContext"; // Import useAmoy hook
 
-function Login({ setCurrentPage, setRole }) {
-    const [walletAddress, setWalletAddress] = useState('');
-    const [role, setRoleState] = useState('');
+function Login({ setRole }) {
+    const {
+        isMetaMaskInstalled,
+        walletConnected,
+        currentChainId,
+        connectWallet,
+        addPolygonAmoyNetwork,
+    } = useAmoy(); // Ensure correct usage of useAmoy hook
 
-    const detectCurrentProvider = () => {
-        let provider;
-        if (window.ethereum) {
-            provider = window.ethereum;
-        } else if (window.web3) {
-            provider = window.web3.currentProvider;
-        } else {
-            console.log('No Ethereum browser detected. You should consider trying MetaMask!');
-        }
-        return provider;
-    };
+    const [walletAddress, setWalletAddress] = useState("");
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
 
     const onConnect = async () => {
         try {
-            const currentProvider = detectCurrentProvider();
-            if (currentProvider) {
-                await currentProvider.request({ method: 'eth_requestAccounts' });
-                const web3 = new Web3(currentProvider);
-                const accounts = await web3.eth.getAccounts();
-                setWalletAddress(accounts[0]);
+            if (!walletConnected) {
+                await connectWallet();
+            }
 
-                // Dummy logic to determine role
-                // In a real scenario, you would fetch this from your backend
-                if (accounts[0] === '0xValidStudentAddress') {
-                    setRole('student');
-                } else if (accounts[0] === '0xValidCollegeAddress') {
-                    setRole('college');
-                } else if (accounts[0] === '0xValidCompanyAddress') {
-                    setRole('company');
-                } else {
-                    alert('No account found. Please register.');
-                    setCurrentPage('register');
-                    return;
-                }
+            if (currentChainId !== "0x13882") {
+                await addPolygonAmoyNetwork();
+                setError("Please switch MetaMask network to Polygon Amoy Testnet.");
+                return;
+            }
 
-                setCurrentPage(`${role}Dashboard`);
+            const web3 = new Web3(window.ethereum);
+            const accounts = await web3.eth.getAccounts();
+            setWalletAddress(accounts[0]);
+
+            const messageResponse = await axios.post("http://localhost:3001/auth/request-message", {
+                address: accounts[0],
+                chain: currentChainId,
+                networkType: "amoy", // Adjust networkType as per your backend's requirements
+            });
+
+            const message = messageResponse.data.message;
+            const signature = await web3.eth.personal.sign(message, accounts[0]);
+
+            const verifyResponse = await axios.post("http://localhost:3001/auth/sign-message", {
+                networkType: "amoy", // Adjust networkType as per your backend's requirements
+                message,
+                signature,
+            });
+
+            if (verifyResponse.data.needsRegistration) {
+                navigate("/register", { state: { authData: verifyResponse.data.authData } });
+            } else {
+                setRole(verifyResponse.data.user.role);
+                localStorage.setItem("token", verifyResponse.data.token);
+                navigate(`/${verifyResponse.data.user.role}Dashboard`);
             }
         } catch (err) {
-            console.log(err);
+            setError("An error occurred during the login process.");
+            console.error(err);
         }
     };
 
     return (
-        <div className='Login'>
+        <div className="Login">
             <h1>Login</h1>
             <button onClick={onConnect}>Login with MetaMask</button>
             {walletAddress && <p>Connected Wallet: {walletAddress}</p>}
+            {error && <p style={{ color: "red" }}>{error}</p>}
         </div>
     );
 }
