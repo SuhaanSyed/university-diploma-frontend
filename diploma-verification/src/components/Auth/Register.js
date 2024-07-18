@@ -73,8 +73,16 @@ function Register({ setCurrentPage, setRole }) {
             localStorage.setItem('token', registerResponse.data.token);
             setCurrentPage(`${registerResponse.data.user.role}Dashboard`);
         } catch (err) {
-            setError('An error occurred during the registration process.');
-            console.error(err);
+            if (err.response && err.response.data) {
+                if (err.response.data.error === 'User with this account already exists.') {
+                    setError('A user with this account already exists. Please use a different account.');
+                } else {
+                    setError('An error occurred during the registration process.');
+                }
+            } else {
+                setError('An error occurred during the registration process.');
+            }
+            console.error('An error occurred during the registration process.', err);
         }
     };
 
