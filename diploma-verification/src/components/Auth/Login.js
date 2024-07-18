@@ -61,7 +61,7 @@ function Login({ setRole }) {
             } else {
                 setRole(verifyResponse.data.user.role);
                 localStorage.setItem("token", verifyResponse.data.token);
-                navigate(`/${verifyResponse.data.user.role}Dashboard`);
+                navigate('/dashboard');
             }
         } catch (err) {
             setError("An error occurred during the login process.");

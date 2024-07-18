@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Web3 from 'web3';
+// import Web3 from 'web3';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { signMessage } from './SignMessage'; // Import the signMessage function
@@ -20,7 +20,7 @@ function Register({ setCurrentPage, setRole }) {
     const connectWallet = async () => {
         if (window.ethereum) {
             try {
-                const web3 = new Web3(window.ethereum);
+                // const web3 = new Web3(window.ethereum);
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 setWalletAddress(accounts[0]);
                 setWalletConnected(true);
@@ -71,7 +71,7 @@ function Register({ setCurrentPage, setRole }) {
 
             setRole(registerResponse.data.user.role);
             localStorage.setItem('token', registerResponse.data.token);
-            setCurrentPage(`${registerResponse.data.user.role}Dashboard`);
+            navigate('/dashboard');
         } catch (err) {
             if (err.response && err.response.data) {
                 if (err.response.data.error === 'User with this account already exists.') {
