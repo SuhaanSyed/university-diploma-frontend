@@ -4,15 +4,16 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAmoy } from "./AmoyContext"; // Import useAmoy hook
 import { signMessage } from './SignMessage'; // Import the signMessage function
+import { Button, Text, VStack, useToast } from "@chakra-ui/react";
 
-function Login({ setRole }) {
+function Login({ setIsLoggedIn }) {
     const {
         walletConnected,
         currentChainId,
         connectWallet,
         addPolygonAmoyNetwork,
     } = useAmoy(); // Ensure correct usage of useAmoy hook
-
+    const toast = useToast();
     const [walletAddress, setWalletAddress] = useState("");
     const [error, setError] = useState("");
     const [showRegisterMessage, setShowRegisterMessage] = useState(false); // State for registration message
@@ -54,29 +55,46 @@ function Login({ setRole }) {
             console.log("statement 3:");
 
             if (verifyResponse.data.needsRegistration) {
-                setShowRegisterMessage(true); // Show registration message
+                toast({
+                    title: "Registration Required",
+                    description: "Please register to continue.",
+                    status: "info",
+                    duration: 3000,
+                    isClosable: true,
+                });
                 setTimeout(() => {
                     navigate("/register", { state: { authData: verifyResponse.data.authData } });
                 }, 3000); // Wait for 3 seconds before navigating
             } else {
-                setRole(verifyResponse.data.user.role);
+                setIsLoggedIn(true);
                 localStorage.setItem("token", verifyResponse.data.token);
+                toast({
+                    title: "Login successful.",
+                    description: "You've been logged in successfully.",
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                });
                 navigate('/dashboard');
             }
         } catch (err) {
-            setError("An error occurred during the login process.");
+            toast({
+                title: "Error logging in.",
+                description: "An error occurred during the login process.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
             console.error(err);
         }
     };
 
     return (
-        <div className="Login">
-            <h1>Login</h1>
-            <button onClick={onConnect}>Login with MetaMask</button>
-            {walletAddress && <p>Connected Wallet: {walletAddress}</p>}
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            {showRegisterMessage && <p>You need to register first. Redirecting to the registration page...</p>}
-        </div>
+        <VStack spacing={4} align="stretch">
+            <Text fontSize="2xl" textAlign="center">Login</Text>
+            <Button colorScheme="teal" onClick={onConnect}>Login with MetaMask</Button>
+            {walletAddress && <Text>Connected Wallet: {walletAddress}</Text>}
+        </VStack>
     );
 }
 

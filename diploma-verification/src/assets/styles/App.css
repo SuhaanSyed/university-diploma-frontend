@@ -1,38 +1,49 @@
-body {
-    font-family: Arial, sans-serif;
+/* Styles for the navigation bar */
+nav {
+    background-color: #333;
+    /* Dark background color */
+    overflow: hidden;
+    /* Ensures the nav content is contained within the nav bar */
 }
 
-.login-container,
-.register-container,
-.dashboard-container {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    text-align: center;
+nav ul {
+    list-style-type: none;
+    /* Removes bullet points from list items */
+    margin: 0;
+    padding: 0;
 }
 
-input,
-select {
+nav ul li {
+    float: left;
+    /* Aligns the list items horizontally */
+}
+
+nav ul li a {
     display: block;
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-button {
-    padding: 10px 20px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: #28a745;
+    /* Makes the entire area of the list item clickable */
     color: white;
-    cursor: pointer;
+    /* Text color */
+    text-align: center;
+    /* Centers the text */
+    padding: 14px 16px;
+    /* Adds some padding inside the list items */
+    text-decoration: none;
+    /* Removes the underline from links */
 }
 
-button:hover {
-    background-color: #218838;
+/* Changes the color of links on hover */
+nav ul li a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+/* Styles for the Routes section */
+.Routes {
+    padding: 20px;
+    /* Adds some space around the content */
+}
+
+h2 {
+    color: #333;
+    /* Dark text color for visibility */
 }

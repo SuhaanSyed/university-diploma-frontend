@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
-// import Web3 from 'web3';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { signMessage } from './SignMessage'; // Import the signMessage function
+import {
+    Box,
+    Button,
+    FormControl,
+    FormLabel,
+    Input,
+    Select,
+    useToast,
+    VStack
+} from '@chakra-ui/react';
 
-function Register({ setCurrentPage, setRole }) {
+function Register({ setIsLoggedIn }) {
     const [walletConnected, setWalletConnected] = useState(false);
     const [walletAddress, setWalletAddress] = useState('');
     const [authData, setAuthData] = useState(null);
@@ -14,6 +23,7 @@ function Register({ setCurrentPage, setRole }) {
     const [permissionCode, setPermissionCode] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const toast = useToast();
 
     const VALID_PERMISSION_CODE = '100';
 
@@ -42,11 +52,23 @@ function Register({ setCurrentPage, setRole }) {
 
                 setAuthData(authResponse.data.authData);
             } catch (err) {
-                setError('An error occurred while connecting to the wallet.');
+                toast({
+                    title: 'Error connecting wallet',
+                    description: error.message,
+                    status: 'error',
+                    duration: 9000,
+                    isClosable: true,
+                });
                 console.error(err);
             }
         } else {
-            setError('MetaMask is not installed.');
+            toast({
+                title: 'Ethereum object not found',
+                description: 'Please install MetaMask!',
+                status: 'warning',
+                duration: 9000,
+                isClosable: true,
+            });
         }
     };
 
@@ -69,19 +91,26 @@ function Register({ setCurrentPage, setRole }) {
                 email,
             });
 
-            setRole(registerResponse.data.user.role);
+            setIsLoggedIn(true);
             localStorage.setItem('token', registerResponse.data.token);
             navigate('/dashboard');
         } catch (err) {
+            let errorMessage = 'An error occurred during the registration process.';
             if (err.response && err.response.data) {
                 if (err.response.data.error === 'User with this account already exists.') {
-                    setError('A user with this account already exists. Please use a different account.');
-                } else {
-                    setError('An error occurred during the registration process.');
+                    errorMessage = 'A user with this account already exists. Please use a different account.';
                 }
-            } else {
-                setError('An error occurred during the registration process.');
             }
+
+            toast({
+                title: "Registration Error",
+                description: errorMessage,
+                status: "error",
+                duration: 9000,
+                isClosable: true,
+                position: "top",
+            });
+
             console.error('An error occurred during the registration process.', err);
         }
     };
@@ -119,43 +148,40 @@ function Register({ setCurrentPage, setRole }) {
     }, [error]);
 
     return (
-        <div className='Register'>
-            <h1>Register</h1>
-            <button onClick={connectWallet}>
-                {walletConnected ? `Wallet Connected: ${walletAddress}` : 'Connect Wallet'}
-            </button>
-            {walletConnected && (
-                <>
-                    <select value={role} onChange={(e) => setRoleState(e.target.value)}>
-                        <option value='student'>Student</option>
-                        <option value='college'>College</option>
-                        <option value='company'>Company</option>
-                    </select>
-                    <input
-                        type='text'
-                        placeholder='Name'
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    <input
-                        type='email'
-                        placeholder='Email'
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                    {(role === 'college' || role === 'company') && (
-                        <input
-                            type='text'
-                            placeholder='Permission Code'
-                            value={permissionCode}
-                            onChange={(e) => setPermissionCode(e.target.value)}
-                        />
-                    )}
-                    <button onClick={handleRegister}>Register</button>
-                </>
-            )}
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-        </div>
+        <Box p={5}>
+            <VStack spacing={4} align="stretch">
+                <FormControl id="wallet">
+                    <FormLabel>Wallet Address</FormLabel>
+                    <Input type="text" value={walletAddress} isReadOnly />
+                    <Button mt={2} colorScheme="blue" onClick={connectWallet} disabled={walletConnected}>
+                        {walletConnected ? 'Wallet Connected' : 'Connect Wallet'}
+                    </Button>
+                </FormControl>
+                <FormControl id="name">
+                    <FormLabel>Name</FormLabel>
+                    <Input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+                </FormControl>
+                <FormControl id="email">
+                    <FormLabel>Email</FormLabel>
+                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                </FormControl>
+                <FormControl id="role">
+                    <FormLabel>Role</FormLabel>
+                    <Select value={role} onChange={(e) => setRoleState(e.target.value)}>
+                        <option value="student">Student</option>
+                        <option value="college">College</option>
+                        <option value="company">Company</option>
+                    </Select>
+                </FormControl>
+                {role === 'college' || role === 'company' ? (
+                    <FormControl id="permissionCode">
+                        <FormLabel>Permission Code</FormLabel>
+                        <Input type="text" value={permissionCode} onChange={(e) => setPermissionCode(e.target.value)} />
+                    </FormControl>
+                ) : null}
+                <Button colorScheme="teal" mt={4} onClick={handleRegister}>Register</Button>
+            </VStack>
+        </Box>
     );
 }
 
