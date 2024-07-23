@@ -15,7 +15,13 @@ import {
     Collapse,
     useDisclosure,
     Alert,
-    AlertIcon
+    AlertIcon,
+    Tag,
+    TagLabel,
+    TagCloseButton,
+    Checkbox,
+    CheckboxGroup,
+    Stack
 } from '@chakra-ui/react';
 
 
@@ -28,6 +34,8 @@ const StudentsCourses = () => {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+    const [selectedMajors, setSelectedMajors] = useState({});
+
 
     useEffect(() => {
         fetchStudents();
@@ -78,6 +86,7 @@ const StudentsCourses = () => {
             console.log(majorId);
             const response = await axios.get(`http://localhost:3002/api/majors/${majorId}/courses`);
             setStudentCourses(response.data);
+            console.log(studentCourses);
         } catch (error) {
             setError('Error fetching courses for major');
         }
@@ -87,14 +96,15 @@ const StudentsCourses = () => {
         try {
             const response = await axios.get(`http://localhost:3002/api/student_courses/${studentId}`);
             setStudentCourses(response.data);
+            console.log(studentCourses);
         } catch (error) {
             setError('Error fetching student courses');
         }
     };
 
-    const handleMajorChange = async (studentId, majorId) => {
+    const handleMajorChange = async (studentId, majorId, name) => {
         try {
-            const response = await axios.put(`http://localhost:3002/api/student_majors`, { studentId, majorId });
+            const response = await axios.put(`http://localhost:3002/api/student_majors`, { studentId, majorId, name });
             console.log(response);
             setMessage('Major updated successfully');
             fetchStudents(); // Refresh the student list
@@ -106,6 +116,22 @@ const StudentsCourses = () => {
         }
 
 
+    };
+
+    const handleDropdownChange = (studentId, selectedMajorIds) => {
+        const selectedMajorNames = selectedMajorIds.map(majorId => {
+            const major = majors.find(major => major.id === majorId);
+            return major ? major.name : '';
+        });
+        setSelectedMajors(prevState => ({
+            ...prevState,
+            [studentId]: selectedMajorIds
+        }));
+
+        selectedMajorIds.forEach((majorId, index) => {
+            const majorName = selectedMajorNames[index];
+            handleMajorChange(studentId, majorId, majorName);
+        });
     };
 
     const handleStudentSelect = (student) => {
@@ -154,21 +180,37 @@ const StudentsCourses = () => {
                     {error}
                 </Alert>
             )}
+            {message && (
+                <Alert status="success" mb={4}>
+                    <AlertIcon />
+                    {message}
+                </Alert>
+            )}
             <VStack spacing={4} align="stretch">
                 <Heading size="md">Students</Heading>
                 <List spacing={3}>
                     {filteredStudents.map((student) => (
                         <ListItem key={student.moralis_provider_id} border="1px" borderRadius="md" p={3}>
                             <HStack justify="space-between">
-                                <Text>{student.name} - Major: {selectedMajor || 'None'}</Text>
+                                {/* <Text>{student.name} - Major: {selectedMajor || 'None'}</Text> */}
+                                <Text>
+                                    {student.name} - Major: {selectedMajors[student.moralis_provider_id] ? selectedMajors[student.moralis_provider_id].map(majorId => majors.find(major => major.id === majorId)?.name).join(', ') : 'None'}
+                                </Text>
                                 <Button onClick={() => handleStudentSelect(student)} size="sm">View Details</Button>
                             </HStack>
                             <Select
-                                value={student.majorId || ''}
-                                onChange={(e) => handleMajorChange(student.moralis_provider_id, e.target.value)}
+                                placeholder="Select Major"
+                                value={selectedMajors[student.moralis_provider_id] || []}
+                                // onChange={(e) => handleMajorChange(student.moralis_provider_id, Array.from(e.target.selectedOptions, option => option.value))}
+                                onChange={(e) => handleDropdownChange(student.moralis_provider_id, Array.from(e.target.selectedOptions, option => option.value))}
                                 mt={2}
+                                multiple
                             >
-                                <option value="">Select Major</option>
+                                {/* {majors.map((major) => (
+                                    <option key={major.id} value={major.id}>
+                                        {major.name}
+                                    </option>
+                                ))} */}
                                 {majors.map((major) => (
                                     <option key={major.id} value={major.id}>{major.name}</option>
                                 ))}
@@ -183,13 +225,12 @@ const StudentsCourses = () => {
                             {studentCourses.map((course) => (
                                 <ListItem key={course.course_id}>
                                     <HStack>
-                                        console.log(course.name);
-                                        <Text>{course.name}</Text>
+                                        <Text width="70%">{course.name}</Text>
                                         <Input
                                             placeholder="Grade"
                                             value={course.grade || ''}
                                             onChange={(e) => handleGradeChange(course.course_id, e.target.value)}
-                                            width="80px"
+                                            width="30%"
                                         />
                                     </HStack>
                                 </ListItem>
@@ -199,6 +240,8 @@ const StudentsCourses = () => {
                     </Box>
                 )}
             </VStack>
+
+
         </Box>
     );
 };

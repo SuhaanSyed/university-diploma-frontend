@@ -1,6 +1,7 @@
 // ManageMajors.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import ManageCourses from './ManageCourses'; // Adjust the path as necessary
 import {
     Accordion,
     AccordionItem,
@@ -18,15 +19,20 @@ import {
     ModalBody,
     ModalCloseButton,
     IconButton,
-    VStack,
     HStack,
+    Heading,
     Input,
     useToast,
-    Text,
     FormControl,
     FormLabel,
+    Table,
+    Thead,
+    Tbody,
+    Tr,
+    Th,
+    Td,
 } from '@chakra-ui/react';
-import { AddIcon, EditIcon, DeleteIcon } from '@chakra-ui/icons';
+import { AddIcon, EditIcon, DeleteIcon, ViewIcon } from '@chakra-ui/icons';
 
 const ManageMajors = () => {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -34,8 +40,12 @@ const ManageMajors = () => {
     const [majors, setMajors] = useState([]);
     const [newMajor, setNewMajor] = useState('');
     const [courseRequirements, setCourseRequirements] = useState([]);
-    const [newCourse, setNewCourse] = useState({ name: '', grade: '' });
     const [message, setMessage] = useState('');
+    // const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+    // const [currentMajorName, setCurrentMajorName] = React.useState('');
+    const [currentMajor, setCurrentMajor] = useState(null); // State to hold the current major's courses
+    const [isViewCoursesModalOpen, setIsViewCoursesModalOpen] = useState(false);
+
 
     useEffect(() => {
         fetchMajors();
@@ -63,6 +73,7 @@ const ManageMajors = () => {
     const handleAddMajor = async () => {
         try {
             const token = localStorage.getItem('token');
+            console.log('Course Requirements:', courseRequirements);
             const response = await axios.post('http://localhost:3002/api/majors', {
                 name: newMajor,
                 graduationRequirements: courseRequirements,
@@ -152,89 +163,111 @@ const ManageMajors = () => {
         }
     };
 
-    const handleAddCourse = () => {
-        setCourseRequirements([...courseRequirements, newCourse]);
-        setNewCourse({ name: '', grade: 0 });
+    const handleViewCoursesClick = (major) => {
+        setCurrentMajor(major);
+        setIsViewCoursesModalOpen(true);
     };
 
-    const handleCourseChange = (e) => {
-        const { name, value } = e.target;
-        setNewCourse((prevCourse) => ({
-            ...prevCourse,
-            [name]: name === 'grade' ? Number(value) : value
-        }));
-    };
 
     return (
-        <div>
-            <h1>Manage Majors</h1>
-            <div>
-                <h3>Add Major</h3>
-                <input
-                    type="text"
-                    value={newMajor}
-                    onChange={(e) => setNewMajor(e.target.value)}
-                    placeholder="New Major"
-                />
-                <h4>Course Requirements</h4>
-                <input
-                    type="text"
-                    name="name"
-                    value={newCourse.name}
-                    onChange={handleCourseChange}
-                    placeholder="Course Name"
-                />
-                <input
-                    type="number"
-                    name="grade"
-                    value={newCourse.grade}
-                    onChange={handleCourseChange}
-                    placeholder="Grade"
-                />
-                <button onClick={handleAddCourse}>Add Course</button>
-                <button onClick={handleAddMajor}>Add Major</button>
-            </div>
-            <div>
-                <h3>Current Majors</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Major</th>
-                            <th>Courses</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {majors.map((major) => (
-                            <tr key={major.name}>
-                                <td>{major.name}</td>
-                                <td>
-                                    <button onClick={() => setMajors(majors.map(m => m.name === major.name ? { ...m, showCourses: !m.showCourses } : m))}>
-                                        {major.showCourses ? 'Hide Courses' : 'Show Courses'}
-                                    </button>
-                                    {major.showCourses && (
-                                        <ul>
-                                            {major.graduation_requirements.map((course, index) => (
-                                                <li key={index}>
-                                                    {course.name} - {course.grade}
-                                                    <button onClick={() => handleEditMajor(major.name, major.name, major.graduation_requirements.filter((_, i) => i !== index))}>Delete Grade</button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </td>
-                                <td>
-                                    <button onClick={() => handleDeleteMajor(major.name)}>Delete</button>
-                                    <button onClick={() => handleEditMajor(major.name, prompt("New Major Name", major.name), major.graduation_requirements)}>Edit</button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            {message && <p>{message}</p>}
-        </div>
+        <>
+            <Heading mb={6}>Manage Majors</Heading>
+            <Accordion allowToggle>
+                {majors.map((major, index) => (
+                    <AccordionItem key={index}>
+                        <h2>
+                            <AccordionButton>
+                                <Box flex="1" textAlign="left">
+                                    {major.name}
+                                </Box>
+                                <AccordionIcon />
+                            </AccordionButton>
+                        </h2>
+                        <AccordionPanel pb={4}>
+                            {/* Major details and options here */}
+                            <HStack justifyContent="space-between">
+                                <IconButton aria-label="Edit Major" icon={<EditIcon />} onClick={() => { handleEditMajor(major.name, major.name, courseRequirements) }} />
+                                <IconButton aria-label="Delete Major" icon={<DeleteIcon />} onClick={() => { handleDeleteMajor(major.name) }} />
+                            </HStack>
+                            {/* Courses list or modal trigger */}
+                        </AccordionPanel>
+                        <AccordionPanel pb={4}>
+                            {/* Major options */}
+                            <Button leftIcon={<ViewIcon />} onClick={() => handleViewCoursesClick(major)}>
+                                View Courses
+                            </Button>
+                            {/* Courses list or modal trigger */}
+                        </AccordionPanel>
+
+                    </AccordionItem>
+                ))}
+            </Accordion>
+
+            <Modal isOpen={isViewCoursesModalOpen} onClose={() => setIsViewCoursesModalOpen(false)} scrollBehavior="inside">
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>{currentMajor ? currentMajor.name : ''} - Courses and Grades</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <Table variant="simple">
+                            <Thead>
+                                <Tr>
+                                    <Th>Course</Th>
+                                    <Th>Grade Requirement</Th>
+                                </Tr>
+                            </Thead>
+                            <Tbody>
+                                {currentMajor?.graduation_requirements?.map((course, index) => (
+                                    <Tr key={index}>
+                                        <Td>{course.name}</Td>
+                                        <Td>{course.grade}</Td>
+                                    </Tr>
+                                ))}
+                            </Tbody>
+                        </Table>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+
+            <IconButton
+                aria-label="Add Major"
+                icon={<AddIcon />}
+                isRound
+                size="lg"
+                colorScheme="teal"
+                position="fixed"
+                bottom="20px"
+                right="20px"
+                onClick={onOpen}
+            />
+
+            <Modal isOpen={isOpen} onClose={onClose}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Add a New Major</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        {/* Form for new major */}
+                        <FormControl>
+                            <FormLabel>Major Name</FormLabel>
+                            <Input value={newMajor} onChange={(e) => setNewMajor(e.target.value)} />
+                            {/* Dynamically add course inputs */}
+                            <ManageCourses
+                                courseRequirements={courseRequirements}
+                                setCourseRequirements={setCourseRequirements} />
+                        </FormControl>
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button colorScheme="blue" mr={3} onClick={handleAddMajor}>
+                            Save
+                        </Button>
+                        <Button variant="ghost" onClick={onClose}>Cancel</Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+        </>
     );
-};
+}
 
 export default ManageMajors;
