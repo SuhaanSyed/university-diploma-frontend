@@ -3,6 +3,7 @@ import { Box, Button, Flex, Heading, Text, VStack } from '@chakra-ui/react';
 import ManageMajors from '../ManageMajors';
 import StudentsCourses from '../StudentCourses'
 import StudentProgress from '../StudentProgress.js'
+import Diploma from '../Diplomas.js';
 
 function CollegeDashboard() {
     const [activePanel, setActivePanel] = useState('ManageMajors');
@@ -25,6 +26,7 @@ function CollegeDashboard() {
                     {activePanel === 'ManageMajors' && <ManageMajors />}
                     {activePanel === 'StudentsCourses' && <StudentsCourses />}
                     {activePanel === 'StudentProgress' && <StudentProgress />}
+                    {activePanel === 'Diplomas' && <Diploma />}
                     {/* Add other components for other panels as needed */}
                 </Box>
             </Box>

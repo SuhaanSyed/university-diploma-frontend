@@ -48,7 +48,7 @@ function App() {
               </Flex>
             </Flex>
             <Routes>
-              <Route path="/" element={<Text fontSize="2xl" p={5}>Welcome to the DApp</Text>} />
+              <Route path="/" element={<Text fontSize="2xl" p={5}>Welcome to the Diploma Verification DApp</Text>} />
               <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
               <Route path="/register" element={<Register />} />
               <Route path="/dashboard" element={<Dashboard />} />
