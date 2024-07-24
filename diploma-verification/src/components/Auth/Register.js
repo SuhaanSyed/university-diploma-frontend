@@ -24,6 +24,7 @@ function Register({ setIsLoggedIn }) {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const toast = useToast();
+    const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
     const VALID_PERMISSION_CODE = '100';
 
@@ -35,7 +36,7 @@ function Register({ setIsLoggedIn }) {
                 setWalletAddress(accounts[0]);
                 setWalletConnected(true);
 
-                const messageResponse = await axios.post('http://localhost:3002/auth/request-message', {
+                const messageResponse = await axios.post(`${backendUrl}/auth/request-message`, {
                     address: accounts[0],
                     chain: '0x1',
                     networkType: 'evm',
@@ -44,7 +45,7 @@ function Register({ setIsLoggedIn }) {
                 const message = messageResponse.data.message;
                 const signature = await signMessage(message, accounts[0]);
 
-                const authResponse = await axios.post('http://localhost:3002/auth/get-auth-data', {
+                const authResponse = await axios.post(`${backendUrl}/auth/get-auth-data`, {
                     networkType: "evm",
                     message,
                     signature,
@@ -84,7 +85,7 @@ function Register({ setIsLoggedIn }) {
         }
 
         try {
-            const registerResponse = await axios.post('http://localhost:3002/auth/register', {
+            const registerResponse = await axios.post(`${backendUrl}/auth/get-register`, {
                 authData,
                 role,
                 name,

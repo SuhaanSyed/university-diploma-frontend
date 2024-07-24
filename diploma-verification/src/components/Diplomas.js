@@ -6,6 +6,7 @@ import contractABI from "../abis/contractABI"; // Adjust the path to your contra
 const Diploma = () => {
     const [diplomas, setDiplomas] = useState([]);
     const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS;
+    const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
     useEffect(() => {
         const loadDiplomas = async () => {

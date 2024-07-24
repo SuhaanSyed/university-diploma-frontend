@@ -29,6 +29,7 @@ const StudentProgress = () => {
     const [studentMajors, setStudentMajors] = useState([]);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+    const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
     // for minting
     const [diplomaFile, setDiplomaFile] = useState(null);
@@ -63,7 +64,8 @@ const StudentProgress = () => {
 
     const fetchStudents = async () => {
         try {
-            const response = await axios.get('http://localhost:3002/api/students');
+
+            const response = await axios.get(`${backendUrl}/api/students`);
             setStudents(response.data);
         } catch (error) {
             setError('Error fetching students');
@@ -78,7 +80,7 @@ const StudentProgress = () => {
         }
 
         try {
-            const response = await axios.get('http://localhost:3002/api/majors', {
+            const response = await axios.get(`${backendUrl}/api/majors`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -91,7 +93,7 @@ const StudentProgress = () => {
 
     const fetchStudentCourses = async (studentId) => {
         try {
-            const response = await axios.get(`http://localhost:3002/api/student_courses/${studentId}`);
+            const response = await axios.get(`${backendUrl}/api/student_courses/${studentId}`);
             // only append if the whole row of response.data does not exist in studentCourses
             const newCourses = response.data.map(course => ({
                 ...course,
@@ -113,7 +115,8 @@ const StudentProgress = () => {
 
     const fetchStudentMajors = async (studentId) => {
         try {
-            const response = await axios.get(`http://localhost:3002/api/student_majors/${studentId}`);
+
+            const response = await axios.get(`${backendUrl}/api/student_majors/${studentId}`);
             setStudentMajors(prevMajors => [...prevMajors, ...response.data]);
         } catch (error) {
             setError('Error fetching student majors');

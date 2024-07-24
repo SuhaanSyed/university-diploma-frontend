@@ -18,6 +18,7 @@ function Login({ setIsLoggedIn }) {
     const [error, setError] = useState("");
     const [showRegisterMessage, setShowRegisterMessage] = useState(false); // State for registration message
     const navigate = useNavigate();
+    const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
     const onConnect = async () => {
         try {
@@ -38,7 +39,9 @@ function Login({ setIsLoggedIn }) {
             console.log(accounts[0]);
             console.log(currentChainId);
 
-            const messageResponse = await axios.post("http://localhost:3002/auth/request-message", {
+            // connect to backend url
+
+            const messageResponse = await axios.post(`${backendUrl}/auth/request-message`, {
                 address: accounts[0],
                 chain: '0x1',
                 networkType: 'evm',
@@ -47,7 +50,7 @@ function Login({ setIsLoggedIn }) {
             const message = messageResponse.data.message;
             const signature = await signMessage(message, accounts[0]); // Use signMessage function here
 
-            const verifyResponse = await axios.post("http://localhost:3002/auth/sign-message", {
+            const verifyResponse = await axios.post(`${backendUrl}/auth/sign-message`, {
                 networkType: "evm", // Adjust networkType as per your backend's requirements
                 message,
                 signature,

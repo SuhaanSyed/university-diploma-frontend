@@ -27,6 +27,7 @@ const StudentsCourses = () => {
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
     const [selectedMajors, setSelectedMajors] = useState({});
+    const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 
     useEffect(() => {
@@ -46,7 +47,7 @@ const StudentsCourses = () => {
 
     const fetchStudents = async () => {
         try {
-            const response = await axios.get('http://localhost:3002/api/students');
+            const response = await axios.get(`${backendUrl}/api/students`);
             setStudents(response.data);
         } catch (error) {
             setError('Error fetching students');
@@ -62,7 +63,7 @@ const StudentsCourses = () => {
         }
 
         try {
-            const response = await axios.get('http://localhost:3002/api/majors', {
+            const response = await axios.get(`${backendUrl}/api/majors`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -76,7 +77,8 @@ const StudentsCourses = () => {
     const fetchCoursesForMajor = async (majorId) => {
         try {
             console.log(majorId);
-            const response = await axios.get(`http://localhost:3002/api/majors/${majorId}/courses`);
+
+            const response = await axios.get(`${backendUrl}/api/majors/${majorId}/courses`);
             setStudentCourses(response.data);
             console.log(studentCourses);
         } catch (error) {
@@ -86,7 +88,7 @@ const StudentsCourses = () => {
 
     const fetchStudentCourses = async (studentId) => {
         try {
-            const response = await axios.get(`http://localhost:3002/api/student_courses/${studentId}`);
+            const response = await axios.get(`${backendUrl}/api/student_courses/${studentId}`);
             setStudentCourses(response.data);
             console.log(studentCourses);
         } catch (error) {
@@ -96,7 +98,7 @@ const StudentsCourses = () => {
 
     const handleMajorChange = async (studentId, majorId, name) => {
         try {
-            const response = await axios.put(`http://localhost:3002/api/student_majors`, { studentId, majorId, name });
+            const response = await axios.put(`${backendUrl}/api/student_majors`, { studentId, majorId, name });
             console.log(response);
             setMessage('Major updated successfully');
             fetchStudents(); // Refresh the student list
@@ -144,7 +146,8 @@ const StudentsCourses = () => {
 
     const handleSaveGrades = async () => {
         try {
-            await axios.put(`http://localhost:3002/api/student_courses/${selectedStudent.moralis_provider_id}`, studentCourses);
+
+            await axios.put(`${backendUrl}/api/student_courses/${selectedStudent.moralis_provider_id}`, studentCourses);
             setSelectedStudent(null); // Deselect student
             fetchStudents(); // Refresh student list
         } catch (error) {

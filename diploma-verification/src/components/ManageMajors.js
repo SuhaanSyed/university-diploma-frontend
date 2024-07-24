@@ -41,6 +41,7 @@ const ManageMajors = () => {
     const [newMajor, setNewMajor] = useState('');
     const [courseRequirements, setCourseRequirements] = useState([]);
     const [message, setMessage] = useState('');
+    const backendUrl = process.env.REACT_APP_BACKEND_URL;
     // const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
     // const [currentMajorName, setCurrentMajorName] = React.useState('');
     const [currentMajor, setCurrentMajor] = useState(null); // State to hold the current major's courses
@@ -59,7 +60,7 @@ const ManageMajors = () => {
         }
 
         try {
-            const response = await axios.get('http://localhost:3002/api/majors', {
+            const response = await axios.get(`${backendUrl}/api/majors`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -74,7 +75,7 @@ const ManageMajors = () => {
         try {
             const token = localStorage.getItem('token');
             console.log('Course Requirements:', courseRequirements);
-            const response = await axios.post('http://localhost:3002/api/majors', {
+            const response = await axios.post(`${backendUrl}/api/majors`, {
                 name: newMajor,
                 graduationRequirements: courseRequirements,
             }, {
@@ -88,7 +89,7 @@ const ManageMajors = () => {
             for (let i = 0; i < courseRequirements.length; i++) {
                 console.log(courseRequirements[i].name);
                 try {
-                    const res = await axios.post('http://localhost:3002/api/courses', {
+                    const res = await axios.post(`${backendUrl}/api/courses`, {
                         name: courseRequirements[i].name,
                         majorId: response.data[0].id,
                     }, {
@@ -123,7 +124,9 @@ const ManageMajors = () => {
 
 
                 // Delete courses for the major
-                await axios.delete(`http://localhost:3002/api/courses/majors/${majorId}`, {
+
+
+                await axios.delete(`${backendUrl}/api/courses/majors/${majorId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -133,7 +136,7 @@ const ManageMajors = () => {
             }
 
 
-            await axios.delete(`http://localhost:3002/api/majors/${majorId}`, {
+            await axios.delete(`${backendUrl}/api/majors/${majorId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -148,7 +151,8 @@ const ManageMajors = () => {
     const handleEditMajor = async (oldName, newName, newGraduationRequirements) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:3002/api/majors/${oldName}`, {
+
+            await axios.put(`${backendUrl}/api/majors/${oldName}`, {
                 newName,
                 graduationRequirements: newGraduationRequirements,
             }, {
