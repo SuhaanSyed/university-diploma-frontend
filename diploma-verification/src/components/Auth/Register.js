@@ -85,7 +85,8 @@ function Register({ setIsLoggedIn }) {
         }
 
         try {
-            const registerResponse = await axios.post(`${backendUrl}/auth/get-register`, {
+            console.log("here?");
+            const registerResponse = await axios.post(`${backendUrl}/auth/register`, {
                 authData,
                 role,
                 name,
