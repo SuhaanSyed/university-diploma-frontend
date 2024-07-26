@@ -50,7 +50,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Text fontSize="2xl" p={5}>Welcome to the Diploma Verification DApp</Text>} />
               <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-              <Route path="/register" element={<Register />} />
+              <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/testapi" element={<TestAPI />} />
             </Routes>
